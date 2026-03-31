@@ -20,14 +20,29 @@ Send any Myanmar text and get corrections back instantly.
 3. Copy the bot token
 4. (Optional) Send `/setinline` to enable inline mode for your bot
 
-### 2. Configure
+### 2. Build the Dictionary
+
+```bash
+pip install "myspellchecker[build]"
+myspellchecker build --sample
+```
+
+This creates `mySpellChecker-default.db` in the current directory. You can also build from your own corpus:
+
+```bash
+myspellchecker build -i corpus.txt -o mySpellChecker-default.db
+```
+
+### 3. Configure
 
 ```bash
 cp .env.example .env
 # Edit .env and add your bot token
 ```
 
-### 3. Run
+You can set a custom database path via the `MYSPELLCHECKER_DB` environment variable.
+
+### 4. Run
 
 **With Docker (recommended):**
 

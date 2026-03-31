@@ -1,21 +1,37 @@
-"""Wrapper around myspellchecker library."""
+"""Wrapper around myspellchecker library.
+
+Before running, build the dictionary:
+    pip install "myspellchecker[build]"
+    myspellchecker build --sample
+
+Or from your own corpus:
+    myspellchecker build -i corpus.txt -o mySpellChecker-default.db
+"""
 
 from __future__ import annotations
 
 import difflib
 import logging
+import os
 
-from myspellchecker.core import ConfigPresets, SpellCheckerBuilder, ValidationLevel
+from myspellchecker.core import SpellCheckerBuilder, ValidationLevel
+from myspellchecker.providers.sqlite import SQLiteProvider
 
 logger = logging.getLogger(__name__)
 
+# Database path — defaults to mySpellChecker-default.db in working directory.
+# Override via MYSPELLCHECKER_DB env var.
+_db_path = os.environ.get("MYSPELLCHECKER_DB", "mySpellChecker-default.db")
+
 # Initialize checker once at module level — models load here, not per-request.
-_checker = (
-    SpellCheckerBuilder()
-    .with_config(ConfigPresets.DEFAULT)
-    .with_phonetic(True)
-    .build()
-)
+_builder = SpellCheckerBuilder().with_phonetic(True)
+if os.path.exists(_db_path):
+    _builder = _builder.with_provider(SQLiteProvider(database_path=_db_path))
+    logger.info("Using database: %s", _db_path)
+else:
+    logger.warning("Database not found at %s — using empty provider", _db_path)
+
+_checker = _builder.build()
 
 
 def check(text: str) -> dict:
